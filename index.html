@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="static/css/index.css">
+</head>
+<body>
+<div id="app">
+    <el-row :gutter="15" type="flex" class="row-bg" justify="center">
+        <el-col :span="12">
+            <div class="grid-content bg-purple">
+                <h1> 晨间笔记 </h1>
+                <el-form ref="form" :model="form" label-width="80px">
+                    <!--时间-->
+                    <el-form-item label="记录时间">
+                        <el-col :span="11">
+                            <el-date-picker
+                                    type="date"
+                                    placeholder="选择日期"
+                                    v-model="form.date"
+                                    style="width: 100%;"
+                                    @change="onDateChange"></el-date-picker>
+                        </el-col>
+                    </el-form-item>
+                    <!--关键-->
+                    <el-form-item label="季度目标">
+                        <el-input type="textarea" v-model="form.goal" :rows="2"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="今日要事">
+                        <el-input type="textarea" v-model="form.importance" :rows="3"></el-input>
+                    </el-form-item>
+                    <el-form-item label="成功日志">
+                        <el-input type="textarea" v-model="form.success" :rows="3"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="学习心得">
+                        <el-input type="textarea" v-model="form.learn" :rows="3"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="财务检视">
+                        <el-input type="textarea" v-model="form.finance" :rows="3"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="人际投入">
+                        <el-input type="textarea" v-model="form.social" :rows="3"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="饮食健康">
+                        <el-input type="textarea" v-model="form.health" :rows="3"></el-input>
+                    </el-form-item>
+
+                    <el-form-item>
+                        <el-button type="primary" @click="onSubmit">保存</el-button>
+                        <el-button>取消</el-button>
+                    </el-form-item>
+                    <el-form-item label="活动性质">
+                        <el-checkbox-group v-model="form.type">
+                            <el-checkbox label="早睡" name="type"></el-checkbox>
+                            <el-checkbox label="早起" name="type"></el-checkbox>
+                            <el-checkbox label="跑步" name="type"></el-checkbox>
+                            <el-checkbox label="读书" name="type"></el-checkbox>
+                            <el-checkbox label="写作" name="type"></el-checkbox>
+                            <el-checkbox label="演讲" name="type"></el-checkbox>
+                        </el-checkbox-group>
+                    </el-form-item>
+                </el-form>
+            </div>
+        </el-col>
+    </el-row>
+</div>
+</body>
+<!--引入Wilddog-->
+<script src="https://cdn.wilddog.com/sdk/js/2.5.2/wilddog-sync.js"></script>
+<!-- 先引入 Vue -->
+<script src="static/js/vue.min.js"></script>
+<!-- 引入组件库 -->
+<script src="static/js/index.js"></script>
+<script>
+    // 创建数据库引用。最好自己创建一个应用，把 danmu 即 `appId` 换成你自己的
+    var config = {
+        syncURL: "https://goodmorning.wilddogio.com"
+    };
+    wilddog.initializeApp(config);
+    var ref = wilddog.sync().ref();
+
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                form: {
+                    date: '',
+                    goal: '',
+                    success: '',
+                    importance: '',
+                    finance: '',
+                    social: '',
+                    learn: '',
+                    health: '',
+                    type: [],
+                },
+            }
+        },
+        methods: {
+            onSubmit() {
+                let date = this.form.date.toLocaleDateString();
+                this.form.date += "";
+                ref.child(date).set(this.form);
+            },
+            onDateChange() {
+                if (typeof(this.form.date) !== "undefined") {
+                    ref.child(this.form.date.toLocaleDateString())
+                        .once("value").then(this.onUpdate).catch(function (err) {
+                        console.error(err);
+                    });
+                    console.log("hello" + this.form.date);
+                } else {
+                    this.form = {
+                        date: '',
+                        goal: '',
+                        success: '',
+                        importance: '',
+                        finance: '',
+                        social: '',
+                        learn: '',
+                        health: '',
+                        type: [],
+                    };
+                }
+            },
+            onUpdate(snapshot) {
+                console.info(this.form + "!");
+                let value = snapshot.val();
+                if (value) {
+                    this.form = snapshot.val();
+                }
+            }
+        }
+    })
+
+</script>
+
+</html>
